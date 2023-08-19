@@ -496,7 +496,7 @@ df.set_index('place').title.filter(like='Japan').head()
 
 ---
 
-## Adding and REmoving Data
+## Adding and Removing Data
 
 ```python
 import pandas as pd
