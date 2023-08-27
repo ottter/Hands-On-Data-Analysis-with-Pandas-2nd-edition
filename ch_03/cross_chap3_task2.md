@@ -39,7 +39,7 @@ faang['volume'] = faang['volume'].astype(int)
 faang = faang.sort_values(by=['date', 'ticker'])
 ```
 
-Running `faang.dtype` before and after these changes shows the updates. `date` goes from 'object' to 'datatime64' and `volume` goes from 'float64' to 'int32'.
+Running `faang.dtypes` before and after these changes shows the updates. `date` goes from 'object' to 'datatime64' and `volume` goes from 'float64' to 'int32'.
 
 ---
 
@@ -110,6 +110,37 @@ The data shows that Facebook stock price crashed on that day and stuck there for
 
 ## Exercise 6
 
+```python
+# read covid19_case.csv
+covid = pd.read_csv('./exercises/covid19_cases.csv')
+# create date column
+covid['date'] = pd.to_datetime(covid['dateRep'])
+# set index to date and sort by index
+covid = covid.set_index('date')
+covid = covid.sort_index()
+# replace United States with USA and United Kingdom with UK
+covid = covid.replace({"United_States_of_America": "USA", "United_Kingdom": "UK"})
+# make a new df with list of countries (below)
+country_list = ['Argentina', 'Brazil', 'China', 'Colombia', 'India', 'Italy', 'Mexico', 'Peru', 'Russia', 'Spain', 'Turkey', 'UK', 'USA']
+covid_short = covid[covid['countriesAndTerritories'].isin(country_list)]
+```
+
+![part 4 and 5](https://puu.sh/JOtX1/8ec6bf03d8.png)
+
+```python
+# pivot data around the list of countries
+covid_pivot = covid_short.pivot(columns='countriesAndTerritories', values='cases').fillna(0)
+```
+
+![part 6](https://puu.sh/JOtX8/29fbd11bc4.png)
+
 ---
 
 ## Exercise 7
+
+```python
+# the hint about passing in index_col='cases' was wrong (i think?). cases failed but 'index' would work
+total_cases = pd.read_csv('./exercises/covid19_total_cases.csv', index_col='index')
+# "T" will transpose the data and then it gets sorted by cases
+total_cases.T.sort_values(by='cases', ascending=False).head(20)
+```
