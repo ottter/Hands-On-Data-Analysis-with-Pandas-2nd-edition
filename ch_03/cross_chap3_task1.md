@@ -172,4 +172,133 @@ sp_reindexed.head(10).assign(
 
 ## 4 - Reshaping Data
 
+```python
+import pandas as pd
+
+long_df = pd.read_csv(
+    'data/long_data.csv', usecols=['date', 'datatype', 'value']
+).rename(
+    columns={'value': 'temp_C'} # rename 'vallue' to 'temp_C'
+).assign(
+    date=lambda x: pd.to_datetime(x.date),  # new column date, but in datetime object
+    temp_F=lambda x: (x.temp_C * 9/5) + 32  # new collumn converting temp_C to temp_F
+)
+
+long_df.set_index('date').head(6).T # index to date and transpose (swap row and column)
+
+pivoted_df = long_df.pivot( #pivot around the date using temp_C
+    index='date', columns='datatype', values='temp_C'
+)
+```
+
+```python
+# create a new df with multiple indexes, then confirm there is multiple
+multi_index_df = long_df.set_index(['date', 'datatype'])
+multi_index_df.head().index
+
+extra_data = long_df.append([{
+    'datatype': 'TAVG',     # make a new row TAVG with the below values
+    'date': '2018-10-01', 
+    'temp_C': 10, 
+    'temp_F': 50
+}]).set_index(['date', 'datatype']).sort_index()
+
+extra_data.unstack().head() # everywhere else has NaN for TAVG because it does not exist
+
+extra_data.unstack(fill_value=-40).head() # the data can be filled in however
+```
+
+```python
+melted_df = wide_df.melt(   # convert wide to long format
+    id_vars='date',         # use date as column identifier
+    value_vars=['TMAX', 'TMIN', 'TOBS'],    # what to melt
+    value_name='temp_C',    # new column for the melted values
+    var_name='measurement'  # new column for melted variable names
+)
+
+stacked_series = wide_df.stack()    # kind of melt but not as good. Series
+
+stacked_df = stacked_series.to_frame('values') # same thing but as a df
+
+stacked_df.index.set_names(['date', 'datatype'], inplace=True) 
+# set name for the date datatype instead of defaults (which the datatype one was empty)
+# inplace = add to the 'main' df instead of making a new one
+```
+
 ## 5 - Handling Data Issues
+
+```python
+# troubleshooting steps if data is looking weird
+df.head()
+df.describe()
+df.info()
+
+contain_nulls = df[
+    df.SNOW.isna() | df.SNWD.isna() | df.TOBS.isna()
+    | df.WESF.isna() | df.inclement_weather.isna()
+]
+contain_nulls.shape[0]  # there is a lot of empty data points
+
+# Does not work:
+df[df.inclement_weather == 'NaN'].shape[0]
+df[df.inclement_weather == np.nan].shape[0]
+# Proper method of finding nulls
+df[df.inclement_weather.isna()].shape[0]
+
+# or find infinite
+df[df.SNWD.isin([-np.inf, np.inf])].shape[0]
+```
+
+```python
+# 1. make the date a datetime
+df.date = pd.to_datetime(df.date)
+
+# 2. save this information for later
+station_qm_wesf = df[df.station == '?'].drop_duplicates('date').set_index('date').WESF
+
+# 3. sort ? to the bottom
+df.sort_values('station', ascending=False, inplace=True)
+
+# 4. drop duplicates based on the date column keeping the first occurrence 
+# which will be the valid station if it has data
+df_deduped = df.drop_duplicates('date')
+
+# 5. remove the station column because we are done with it
+df_deduped = df_deduped.drop(columns='station').set_index('date').sort_index()
+
+# 6. take valid station's WESF and fall back on station ? if it is null
+df_deduped = df_deduped.assign(
+    WESF=lambda x: x.WESF.combine_first(station_qm_wesf)
+)
+
+df_deduped.shape
+```
+
+```python
+# drop any row with a null value
+df_deduped.dropna().shape
+# only drop a row if ALL values are null
+df_deduped.dropna(how='all').shape
+# fill null values
+df_deduped.loc[:,'WESF'].fillna(0, inplace=True)
+
+# use lambda to replace mistaken values with NaN
+df_deduped = df_deduped.assign(
+    TMAX=lambda x: x.TMAX.replace(5505, np.nan),
+    TMIN=lambda x: x.TMIN.replace(-40, np.nan),
+)
+
+df_deduped.assign( # forward fill (with previous values)
+    TMAX=lambda x: x.TMAX.fillna(method='ffill'),
+    TMIN=lambda x: x.TMIN.fillna(method='ffill')
+).head()
+
+df_deduped.assign(  # replace NaN with 0 in SNWD value
+    SNWD=lambda x: np.nan_to_num(x.SNWD)
+).head()
+
+df_deduped\
+    .reindex(pd.date_range('2018-01-01', '2018-12-31', freq='D'))\
+    .apply(lambda x: x.interpolate())\
+    .head(10)   # with missing data, average the previous and next values to make new one
+```
