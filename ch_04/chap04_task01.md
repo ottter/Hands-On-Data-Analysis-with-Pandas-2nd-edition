@@ -172,13 +172,65 @@ pd.crosstab(
 ## Time Series
 
 ```python
+fb = pd.read_csv('data/fb_2018.csv', index_col='date', parse_dates=True).assign(
+    trading_volume=lambda x: pd.cut(x.volume, bins=3, labels=['low', 'med', 'high'])
+)
 
+# time based filtering
+fb['2018-10-11':'2018-10-15']
+# returns True
+fb.loc['2018-q1'].equals(fb['2018-01':'2018-03'])
+
+fb_reindexed = fb.reindex(pd.date_range('2018-01-01', '2018-12-31', freq='D'))
+# returns True
+fb_reindexed.first('1D').isna().squeeze().all()
+# returns Timestamp('2018-01-02 00:00:00', freq='D')
+fb_reindexed.loc['2018-Q1'].first_valid_index()
 ```
 
 ```python
-
+# per minute
+stock_data_per_minute = pd.read_csv(
+    'data/fb_week_of_may_20_per_minute.csv', index_col='date', parse_dates=True, 
+    date_parser=lambda x: pd.to_datetime(x, format='%Y-%m-%d %H-%M')
+)
+# groups it per day
+stock_data_per_minute.groupby(pd.Grouper(freq='1D')).agg({
+    'open': 'first',
+    'high': 'max', 
+    'low': 'min', 
+    'close': 'last', 
+    'volume': 'sum'
+})
+# @ set time per day in set
+stock_data_per_minute.at_time('9:30')
 ```
 
 ```python
+# returns True
+(
+    fb.drop(columns='trading_volume') 
+    - fb.drop(columns='trading_volume').shift()
+).equals(
+    fb.drop(columns='trading_volume').diff()
+)
 
+# find the difference between day to day
+fb.drop(columns='trading_volume').diff().head()
+```
+
+```python
+with sqlite3.connect('data/stocks.db') as connection:
+    fb_prices = pd.read_sql(
+        'SELECT * FROM fb_prices', connection, 
+        index_col='date', parse_dates=['date']
+    )
+    aapl_prices = pd.read_sql(
+        'SELECT * FROM aapl_prices', connection, 
+        index_col='date', parse_dates=['date']
+    )
+
+# FB is by minute and AAPL is by second
+fb_prices.index.second.unique()
+aapl_prices.index.second.unique()
 ```
