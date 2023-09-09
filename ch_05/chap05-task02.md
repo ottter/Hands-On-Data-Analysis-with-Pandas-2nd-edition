@@ -139,6 +139,25 @@ monthly_resample.plot(ax=axes[1],
                       # c) color the bars
                       color=np.where(monthly_resample <= 0, 'r', 'g'))
 # d) method i like more for renaming the month column
-# i dont remember how to not have it output the text list portion. keeping it here for reference though
-axes[1].set_xticklabels(monthly_resample.index.strftime('%b'))
+axes[1].set_xticklabels(monthly_resample.index.strftime('%b'));
+```
+
+with using `axes[1].set_xticklabels(monthly_resample.index.strftime('%b'))` it would normally
+ output the below txt code block (atleast with using `%matplotlib inline`). Appending a
+ semicolon to the end of the line supresses this output. The book suggested method to change
+ the x tick labels does not have to worry about this.
+
+```txt
+[Text(0, 0, 'Jan'),
+ Text(1, 0, 'Feb'),
+ Text(2, 0, 'Mar'),
+ Text(3, 0, 'Apr'),
+ Text(4, 0, 'May'),
+ Text(5, 0, 'Jun'),
+ Text(6, 0, 'Jul'),
+ Text(7, 0, 'Aug'),
+ Text(8, 0, 'Sep'),
+ Text(9, 0, 'Oct'),
+ Text(10, 0, 'Nov'),
+ Text(11, 0, 'Dec')]
 ```
