@@ -24,7 +24,7 @@ sns.heatmap(
 )
 ```
 
-![exercise 01](./images/exercise01.png)
+![exercise 01](images/exercise01.png)
 
 ## Exercise 02
 
@@ -58,8 +58,7 @@ for ax, var in zip(axes, ['volume', 'close']):
     ax.set_ylabel('Values')
 ```
 
-![exercise 02](./images/exercise02.png)
-
+![exercise 02](images/exercise02.png)
 
 ## Exercise 03
 
@@ -98,7 +97,7 @@ ax.axvline(over_1M, linestyle='dashed', color='b', label=f"Reached 1M on {over_1
 ax.legend()
 ```
 
-![exercise 03](./images/exercise03.png)
+![exercise 03](images/exercise03.png)
 
 ```python
 # print(cumulative_cases.iloc[::10])
