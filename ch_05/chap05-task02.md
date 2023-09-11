@@ -24,6 +24,8 @@ covid = pd.read_csv('data/covid19_cases.csv', parse_dates=['dateRep'])
 fb.close.rolling('20D').min().plot(title='rolling 20 day min')
 ```
 
+![exercise 01](./images/exercise01.png)
+
 ---
 
 ## Exercise 02
@@ -38,6 +40,8 @@ hist = fb['opentoclose'].plot(kind='hist', density=True)
 fb['opentoclose'].plot(kind='kde', ax=hist)
 ```
 
+![exercise 02](./images/exercise02.png)
+
 ---
 
 ## Exercise 03
@@ -50,6 +54,8 @@ indonesia_quakes = quakes.query('parsed_place == "Indonesia"')
 # seaborn to create a box plot where mag is y and each magType is on the x axis
 sns.catplot(x='magType', y='mag', data=indonesia_quakes, kind='box')
 ```
+
+![exercise 03](./images/exercise03.png)
 
 ---
 
@@ -65,6 +71,8 @@ weekly_diff = fb_resample['high'] - fb_resample['low']
 # plot it on a line
 weekly_diff.plot(kind='line', title='Weekly Max High Price - Min Low Price')
 ```
+
+![exercise 04](./images/exercise04.png)
 
 ---
 
@@ -110,6 +118,8 @@ rolling_14day[['Brazil', 'India', 'USA']].plot(
     ax=axes[2], title='Brazil, India & USA', style=['--', ':', '-'])
 ```
 
+![exercise 05](./images/exercise05.png)
+
 ---
 
 ## Exercise 06
@@ -142,9 +152,11 @@ monthly_resample.plot(ax=axes[1],
 axes[1].set_xticklabels(monthly_resample.index.strftime('%b'));
 ```
 
+![exercise 06](./images/exercise06.png)
+
 with using `axes[1].set_xticklabels(monthly_resample.index.strftime('%b'))` it would normally
  output the below txt code block (atleast with using `%matplotlib inline`). Appending a
- semicolon to the end of the line supresses this output. The book suggested method to change
+ semicolon `;` to the end of the line supresses this output. The book suggested method to change
  the x tick labels does not have to worry about this.
 
 ```txt
